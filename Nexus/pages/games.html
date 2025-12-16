@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta property="og:title" content="JEXUS | Games">
+  <meta property="og:description" content="Play your favorite games like Roblox, Minecraft, Among Us and more!">
+  <meta property="og:image" content="/storage/images/logo.png">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Home</title>
+  <link rel="icon" href="../storage/images/googleclassroom.png" type="image/png" />
+  <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@700&amp;display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../storage/css/anotherstyle.css" />
+  <link rel="stylesheet" href="../storage/css/style.css" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet" />
+</head>
+<body>
+  <script src="../particles.js"></script>
+  <script src="../storage/js/app.js"></script>
+  <div id="particles-js"></div>
+  <script src="../storage/js/particles-toggle.js" defer></script> 
+  <div class="navbar">
+    <div class="left-side">
+      <a href="../index.html"></a>
+    </div>
+    <div class="right-side">
+      <script type="text/javascript" src="../storage/js/nav.js"></script>
+    </div>
+  </div>
+  <div class="game-title">Games</div>
+  <div class="games-title" id="gamesTitle">Select from 3 games!</div>
+  <div class="search-bar-container">
+    <input
+      type="text"
+      id="gameSearch"
+      autocomplete="off"
+      class="search-bar"
+      placeholder="Search for a game..."
+      oninput="filterGames()"
+    />
+    <button id="random-button">Let us pick</button>
+  </div>
+  <div class="game-grid" id="gameGrid"></div>
+  <a href="AVA.html">
+            <img src="/pages/images/avsa.png" alt="Animator vs. Animation" width="150" height="150">
+            <div class="overlay-text">Animator vs. Animation</div>
+          </a>
+
+          <a href="/pages/2048-master/index.html">
+            <img src="/pages/images/2048.png" alt="2048" width="150" height="150">
+            <div class="overlay-text">2048</div>
+          </a>
+
+           <a href="https://objectstorage.us-ashburn-1.oraclecloud.com/n/idzgyfi7awwr/b/bucket-20231001-1518-rb1.0/o/index.html">
+            <img src="/pages/images/retrobowl.png" alt="2048" width="150" height="150">
+            <div class="overlay-text">2048</div>
+          </a>
+  <script>
+    const CACHE_KEY = "games-cache";
+    const CACHE_TIME_KEY = "games-cache-time";
+    const JSON_PATH = "/storage/json/games.json";
+
+    async function loadGames() {
+      const cached = localStorage.getItem(CACHE_KEY);
+
+      if (cached) {
+        try {
+          const games = JSON.parse(cached);
+          renderGames(games);
+        } catch (e) {
+          console.warn("Failed to parse cached games:", e);
+        }
+      }
+
+      try {
+        const res = await fetch(JSON_PATH, { cache: "no-store" });
+        if (!res.ok) throw new Error("Failed to fetch JSON");
+        const freshGames = await res.json();
+        const freshString = JSON.stringify(freshGames);
+        if (freshString !== cached) {
+          localStorage.setItem(CACHE_KEY, freshString);
+          localStorage.setItem(CACHE_TIME_KEY, Date.now().toString());
+          renderGames(freshGames);
+        }
+      } catch (err) {
+        console.error(`Failed to fetch latest games.json:`, err);
+      }
+    }
+
+    function renderGames(games) {
+      const gameGrid = document.getElementById("gameGrid");
+      const gamesTitle = document.getElementById("gamesTitle");
+      gameGrid.innerHTML = "";
+
+      for (const game of games) {
+        const div = document.createElement("div");
+        div.className = "game-button";
+        div.innerHTML = `
+          <a href="${game.url}">
+            <img src="${game.img}" alt="${game.alt || game.title}" onerror="this.onerror=null;this.src='/storage/images/404.png';" />
+            <div class="overlay-text">${game.title}</div>
+          </a>
+        `;
+        gameGrid.appendChild(div);
+      }
+
+      // ✅ Update game count
+      gamesTitle.textContent = `Select from ${games.length} games!`;
+
+      sortGameButtons();
+      checkGridAlignment();
+    }
+
+    function filterGames() {
+      const searchInput = document.getElementById("gameSearch").value.toLowerCase();
+      const games = document.querySelectorAll(".game-button");
+      games.forEach((game) => {
+        const title = game.querySelector(".overlay-text").textContent.toLowerCase();
+        game.style.display = title.includes(searchInput) ? "block" : "none";
+      });
+    }
+
+    function checkGridAlignment() {
+      const buttons = document.querySelectorAll(".game-button");
+      const pageWidth = window.innerWidth;
+      buttons.forEach((button) => {
+        const rect = button.getBoundingClientRect();
+        const distanceToRightEdge = pageWidth - rect.right;
+        button.style.clear = distanceToRightEdge < 75 ? "both" : "none";
+      });
+    }
+
+    window.addEventListener("resize", checkGridAlignment);
+    window.addEventListener("load", () => {
+      loadGames();
+      checkGridAlignment();
+    });
+
+    document.getElementById("random-button").addEventListener("click", () => {
+      const games = Array.from(document.querySelectorAll(".game-button a"));
+      if (games.length === 0) return;
+      const randomIndex = Math.floor(Math.random() * games.length);
+      const randomGame = games[randomIndex];
+      window.location.href = randomGame.href;
+    });
+  </script>
+
+  <script type="text/javascript" src="../storage/js/settings.js"></script>
+  <script type="text/javascript" src="../storage/js/background.js"></script>
+  <script type="text/javascript" src="../storage/js/resort.js"></script>
+  <script type="text/javascript" src="../storage/js/cheese-algorithm.js"></script>
+  <script src="../static/uv/uv.bundle.js" defer></script>
+  <script src="../static/uv/uv.config.js" defer></script>
+  <script src="../static/register-sw.js" defer></script>
+  <script src="../static/search.js" defer></script>
+  <script src="../static/index.js" defer></script>
+  <script>
+    async function regsw() {
+      await navigator.serviceWorker.register("/static/uv-sw.js", {
+        scope: "/static/",
+      });
+    }
+    regsw();
+  </script>
+</body>
+</html>
