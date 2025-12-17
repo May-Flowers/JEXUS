@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta property="og:title" content="Nexus | Apps and More"> 
+  <meta property="og:description" content="Use different apps, unblocking methods, and more">
+  <meta property="og:image" content="/storage/images/logo.png">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Home</title>
+  <link rel="icon" href="../storage/images/googleclassroom.png" type="image/png" />
+  <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@700&amp;display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../storage/css/anotherstyle.css" />
+  <link rel="stylesheet" href="../storage/css/style.css" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet" />
+</head>
+<body>
+  <script src="../particles.js"></script>
+  <script src="../storage/js/app.js"></script>
+  <div id="particles-js"></div>
+  <script src="../storage/js/particles-toggle.js" defer></script>
+  <div class="navbar">
+    <div class="left-side">
+      <a href="../index.html">
+      </a>
+    </div>
+    <div class="right-side">
+      <script type="text/javascript" src="../storage/js/nav.js"></script>
+    </div>
+  </div>
+  <div class="game-title">Apps</div>
+  <div class="search-bar-container">
+    <input
+      type="text"
+      id="gameSearch"
+      class="search-bar"
+      placeholder="Search for a app..."
+      oninput="filterApps()"
+    />
+    <button id="random-button">Let us pick</button>
+  </div>
+  <div class="game-grid" id="gameGrid"></div>
+  <a href="/v86/index.html" class="game-button">
+            <img src="/pages/images/v86.png" alt="v86" width="150" height="150">
+            <div class="overlay-text">v86</div>
+          </a>
+
+  <script>
+    const CACHE_KEY = "apps-cache";
+    const CACHE_TIME_KEY = "apps-cache-time";
+    const JSON_PATH = "/storage/json/apps.json";
+
+    async function loadApps() {
+      const gameGrid = document.getElementById("gameGrid");
+      const cached = localStorage.getItem(CACHE_KEY);
+
+      if (cached) {
+        try {
+          const apps = JSON.parse(cached);
+          renderApps(apps);
+        } catch (e) {
+          console.warn("Failed to parse cached apps:", e);
+        }
+      }
+
+      try {
+        const res = await fetch(JSON_PATH, { cache: "no-store" });
+        if (!res.ok) throw new Error("Failed to fetch JSON");
+        const freshApps = await res.json();
+        const freshString = JSON.stringify(freshApps);
+        if (freshString !== cached) {
+          localStorage.setItem(CACHE_KEY, freshString);
+          localStorage.setItem(CACHE_TIME_KEY, Date.now().toString());
+          renderApps(freshApps);
+        }
+      } catch (err) {
+        console.error(`Failed to fetch latest apps.json:`, err);
+      }
+    }
+
+    function renderApps(apps) {
+      const gameGrid = document.getElementById("gameGrid");
+      gameGrid.innerHTML = "";
+      for (const game of apps) {
+        const div = document.createElement("div");
+        div.className = "game-button";
+        div.innerHTML = `
+          <a href="${game.url}">
+            <img src="${game.img}" alt="${game.alt || game.title}" onerror="this.onerror=null;this.src='/storage/images/404.png';" />
+            <div class="overlay-text">${game.title}</div>
+          </a>
+        `;
+        gameGrid.appendChild(div);
+      }
+      sortGameButtons();
+      checkGridAlignment();
+    }
+
+    function filterApps() {
+      const searchInput = document.getElementById("gameSearch").value.toLowerCase();
+      const apps = document.querySelectorAll(".game-button");
+      apps.forEach((game) => {
+        const title = game.querySelector(".overlay-text").textContent.toLowerCase();
+        game.style.display = title.includes(searchInput) ? "block" : "none";
+      });
+    }
+
+    function checkGridAlignment() {
+      const buttons = document.querySelectorAll(".game-button");
+      const pageWidth = window.innerWidth;
+      buttons.forEach((button) => {
+        const rect = button.getBoundingClientRect();
+        const distanceToRightEdge = pageWidth - rect.right;
+        button.style.clear = distanceToRightEdge < 75 ? "both" : "none";
+      });
+    }
+
+    window.addEventListener("resize", checkGridAlignment);
+    window.addEventListener("load", () => {
+      loadApps();
+      checkGridAlignment();
+    });
+
+    document.getElementById("random-button").addEventListener("click", () => {
+      const apps = Array.from(document.querySelectorAll(".game-button a"));
+      if (apps.length === 0) return;
+      const randomIndex = Math.floor(Math.random() * apps.length);
+      const randomGame = apps[randomIndex];
+      window.location.href = randomGame.href;
+    });
+  </script>
+
+  <script type="text/javascript" src="../storage/js/settings.js"></script>
+  <script type="text/javascript" src="../storage/js/background.js"></script>
+  <script type="text/javascript" src="../storage/js/resort.js"></script>
+  <script type="text/javascript" src="../storage/js/cheese-algorithm.js"></script>
+  <script src="../static/uv/uv.bundle.js" defer></script>
+  <script src="../static/uv/uv.config.js" defer></script>
+  <script src="../static/register-sw.js" defer></script>
+  <script src="../static/search.js" defer></script>
+  <script src="../static/index.js" defer></script>
+  <script>
+    async function regsw() {
+      await navigator.serviceWorker.register("/static/uv-sw.js", {
+        scope: "/static/",
+      });
+    }
+    regsw();
+  </script>
+</body>
+</html>
