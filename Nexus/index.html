@@ -375,7 +375,22 @@
         </button>
       </div>
       <div class="search-bar-container">
-        <input type="text" id="search-input" value="jexus://new-tab" class="search-bar" autocomplete="off" placeholder="Search or enter a URL">
+        <form id="uv-form">
+        <input
+          id="uv-search-engine"
+          value="https://duckduckgo.com/?q=%s&kp=1&ia=web"
+          type="hidden"
+        />
+        <input
+          id="uv-address"
+          type="text"
+          autocomplete="off"
+          class="search-bar-home"
+          placeholder="search (－ _ －) zzZ"
+        />
+        <button id="search-button" onclick="search()">
+          SEARCH <i class="fa-solid fa-magnifying-glass"></i>
+        </button>
       </div>
       <div class="navbar-right">
         <button onclick="openInAboutBlank()" class="nav-btn">
