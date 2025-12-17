@@ -404,37 +404,25 @@ function internal(url) {
 }
 
 function search() {
-  const inputRaw = document.getElementById('search-input').value.trim();
+  const query = document.getElementById('search-input').value.trim();
+  if (!query) return;
+
   const iframe = document.querySelector('.tab-iframe.active');
-  if (!inputRaw || !iframe) return;
+  if (!iframe) return;
 
-  let mapped = internal(inputRaw);
-  if (mapped == null) mapped = inputRaw;
-
-  if (typeof mapped === 'function') {
-    mapped();
+  // Check for internal pages (your jexus:// stuff)
+  const internalPage = internal(query);
+  if (typeof internalPage === 'function') {
+    internalPage();
     return;
   }
 
-  const isInternal = mapped === '/static/' || mapped === '/pages/prox/settings';
-  let finalURL = mapped;
+  // Detect if the input is a URL
+  const isURL = /^https?:\/\//i.test(query) || /\.[a-z]{2,}(\/|$)/i.test(query);
+  let finalURL = isURL ? (query.startsWith('http') ? query : 'http://' + query) 
+                        : `https://duckduckgo.com/?q=${encodeURIComponent(query)}`;
 
-  if (!isInternal) {
-    const hasProtocol = /^https?:\/\//i.test(mapped);
-    const looksLikeURL = /\.[a-z]{2,}(\/|$)/i.test(mapped);
-
-    if (hasProtocol) {
-      finalURL = mapped;
-    } else if (looksLikeURL) {
-      finalURL = 'http://' + mapped;
-    } else {
-      finalURL = `https://duckduckgo.com/?q=${encodeURIComponent(mapped)}`;
-    }
-
-    finalURL = `/static/embed?p=${finalURL}`;
-  }
-
-  iframe.src = isInternal ? mapped : finalURL;
+  iframe.src = finalURL;
   iframe.onload = () => {
     updateSearchBar(iframe);
     updateTabName(iframe);
